@@ -14,10 +14,7 @@ MAJ_VERSION = 2
 MIN_VERSION = 0
 REV_VERSION = 0
 
-TARGET      = libdxl_sbc_cpp.so
-TARGET1     = $(TARGET).$(MAJ_VERSION)
-TARGET2     = $(TARGET).$(MAJ_VERSION).$(MIN_VERSION)
-TARGET3     = $(TARGET).$(MAJ_VERSION).$(MIN_VERSION).$(REV_VERSION)
+TARGET      = libdxl_sbc_cpp.a
 
 CHK_DIR_EXISTS = test -d
 PRINT       = echo
@@ -36,8 +33,8 @@ MKDIR       = mkdir
 CC          = gcc
 CX          = g++
 CONTROL_TABLE_PATH_FLAG = -DCONTROL_TABLE_PATH=\"$(INSTALL_ROOT)/share/dynamixel_sdk/control_table\"
-CCFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall -c $(INCLUDES) -fPIC -g $(CONTROL_TABLE_PATH_FLAG)
-CXFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall -c $(INCLUDES) -fPIC -g $(CONTROL_TABLE_PATH_FLAG)
+CCFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall -c $(INCLUDES) -fPIC -g $(CONTROL_TABLE_PATH_FLAG) -std=c++17
+CXFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall -c $(INCLUDES) -fPIC -g $(CONTROL_TABLE_PATH_FLAG) -std=c++17
 INCLUDES    += -I$(DIR_DXL)/include/dynamixel_sdk
 INCLUDES    += -I$(DIR_DXL)/include
 
@@ -75,7 +72,7 @@ OBJECTS=$(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES)))
 # COMPILING RULES
 #---------------------------------------------------------------------
 $(TARGET): makedirs $(OBJECTS)
-	$(LD) $(LDFLAGS) -o ./$(TARGET) $(OBJECTS) $(LIBRARIES)
+	$(AR) $(ARFLAGS) ./$(TARGET) $(OBJECTS)
 
 makedirs:
 	mkdir -p $(DIR_OBJS)/
@@ -87,9 +84,6 @@ install: $(TARGET)
     # copy the binaries into the lib directory
 	@$(CHK_DIR_EXISTS) $(INSTALL_ROOT)/lib || $(MKDIR) $(INSTALL_ROOT)/lib
 	-$(CP) "./$(TARGET)" "$(INSTALL_ROOT)/lib/$(TARGET)"
-	-$(SYMLINK) "$(INSTALL_ROOT)/lib/$(TARGET)" "$(INSTALL_ROOT)/lib/$(TARGET1)"
-	-$(SYMLINK) "$(INSTALL_ROOT)/lib/$(TARGET)" "$(INSTALL_ROOT)/lib/$(TARGET2)"
-	-$(SYMLINK) "$(INSTALL_ROOT)/lib/$(TARGET)" "$(INSTALL_ROOT)/lib/$(TARGET3)"
 
     # copy the headers into the include directory
 	@$(CHK_DIR_EXISTS) $(INSTALL_ROOT)/include/dynamixel_sdk || $(MKDIR) $(INSTALL_ROOT)/include/dynamixel_sdk
@@ -102,13 +96,8 @@ install: $(TARGET)
 	@$(CHK_DIR_EXISTS) $(INSTALL_ROOT)/share/dynamixel_sdk || $(MKDIR) -p $(INSTALL_ROOT)/share/dynamixel_sdk
 	$(CP_ALL) $(DIR_DXL)/../control_table $(INSTALL_ROOT)/share/dynamixel_sdk/
 
-	$(LD_CONFIG)
-
 uninstall:
 	$(RM) $(INSTALL_ROOT)/lib/$(TARGET)
-	$(RM) $(INSTALL_ROOT)/lib/$(TARGET1)
-	$(RM) $(INSTALL_ROOT)/lib/$(TARGET2)
-	$(RM) $(INSTALL_ROOT)/lib/$(TARGET3)
 
 	$(RM) $(INSTALL_ROOT)/include/dynamixel_sdk/dynamixel_sdk.h
 	$(RM_ALL) $(INSTALL_ROOT)/include/dynamixel_sdk/*
